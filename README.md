@@ -8,7 +8,7 @@ This project has been separated into frontend and backend:
 
 - **Frontend**: React + TypeScript + Vite + shadcn-ui
 - **Backend**: Node.js + Express + MongoDB
-- **Database**: MongoDB (replacing Supabase)
+- **Database**: MongoDB 
 
 ## Project Structure
 
@@ -204,7 +204,6 @@ The backend seeds the following coupon codes:
 
 4. **Deploy:**
    - Vercel will automatically deploy your API
-   - Your backend will be available at `https://your-backend-project.vercel.app`
 
 ### Alternative Deployment Options
 
