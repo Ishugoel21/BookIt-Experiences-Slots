@@ -17,6 +17,30 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Initialize database connection
+let dbConnected = false;
+
+const initializeDB = async () => {
+  if (!dbConnected) {
+    try {
+      await connectDB();
+      dbConnected = true;
+      console.log('✅ Database connected successfully');
+    } catch (error) {
+      console.error('❌ Database connection failed:', error);
+      dbConnected = false;
+    }
+  }
+};
+
+// Initialize database on first request
+app.use(async (req, res, next) => {
+  if (!dbConnected) {
+    await initializeDB();
+  }
+  next();
+});
+
 // Routes
 app.use('/api/coupons', couponRoutes);
 app.use('/api/bookings', bookingRoutes);
@@ -42,30 +66,6 @@ app.get('/', (req, res) => {
       bookings: '/api/bookings'
     }
   });
-});
-
-// Initialize database connection
-let dbConnected = false;
-
-const initializeDB = async () => {
-  if (!dbConnected) {
-    try {
-      await connectDB();
-      dbConnected = true;
-      console.log('✅ Database connected successfully');
-    } catch (error) {
-      console.error('❌ Database connection failed:', error);
-      dbConnected = false;
-    }
-  }
-};
-
-// Initialize database on first request
-app.use(async (req, res, next) => {
-  if (!dbConnected) {
-    await initializeDB();
-  }
-  next();
 });
 
 // Error handling middleware
