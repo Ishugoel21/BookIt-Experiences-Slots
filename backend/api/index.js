@@ -53,7 +53,8 @@ app.use((req, res, next) => {
   console.log(`📥 ${req.method} ${req.path}`, {
     query: req.query,
     body: req.body,
-    headers: req.headers
+    originalUrl: req.originalUrl,
+    url: req.url
   });
   next();
 });
@@ -88,7 +89,9 @@ app.use(async (req, res, next) => {
   next();
 });
 
-// Routes (Vercel already handles /api prefix, so we use root paths)
+// Routes - try both with and without /api prefix
+app.use('/api/coupons', couponRoutes);
+app.use('/api/bookings', bookingRoutes);
 app.use('/coupons', couponRoutes);
 app.use('/bookings', bookingRoutes);
 
@@ -103,10 +106,45 @@ app.get('/health', (req, res) => {
   });
 });
 
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    message: 'Server is running',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    database: dbConnected ? 'connected' : 'demo mode'
+  });
+});
+
 // Simple test endpoint
 app.get('/test', (req, res) => {
   res.json({
     message: 'API is working!',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+app.get('/api/test', (req, res) => {
+  res.json({
+    message: 'API is working!',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// Debug route to test bookings
+app.get('/bookings/debug', (req, res) => {
+  res.json({
+    message: 'Bookings route is working!',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+app.get('/api/bookings/debug', (req, res) => {
+  res.json({
+    message: 'Bookings route is working!',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development'
   });
@@ -136,11 +174,25 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 404 handler
+// Debug route to catch all requests
 app.use('*', (req, res) => {
+  console.log('🔍 404 Handler triggered:', {
+    method: req.method,
+    path: req.path,
+    originalUrl: req.originalUrl,
+    url: req.url,
+    query: req.query
+  });
+  
   res.status(404).json({
     error: 'Not Found',
-    message: `Route ${req.originalUrl} not found`
+    message: `Route ${req.originalUrl} not found`,
+    debug: {
+      method: req.method,
+      path: req.path,
+      originalUrl: req.originalUrl,
+      url: req.url
+    }
   });
 });
 
