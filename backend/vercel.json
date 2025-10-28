@@ -2,14 +2,30 @@
   "version": 2,
   "builds": [
     {
-      "src": "src/index.js",
+      "src": "api/index.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/coupons/index.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/bookings/index.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
+      "src": "/api/coupons/(.*)",
+      "dest": "/api/coupons/index.js"
+    },
+    {
+      "src": "/api/bookings/(.*)",
+      "dest": "/api/bookings/index.js"
+    },
+    {
       "src": "/(.*)",
-      "dest": "/src/index.js"
+      "dest": "/api/index.js"
     }
   ],
   "env": {

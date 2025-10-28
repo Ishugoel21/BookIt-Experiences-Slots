@@ -1,20 +1,14 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-import { connectDB } from './config/database.js';
-import couponRoutes from './routes/coupons.js';
-import bookingRoutes from './routes/bookings.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import { connectDB } from '../src/config/database.js';
+import couponRoutes from '../src/routes/coupons.js';
+import bookingRoutes from '../src/routes/bookings.js';
 
 // Load environment variables
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors({
@@ -91,26 +85,4 @@ app.use('*', (req, res) => {
   });
 });
 
-// Start server after database connection (only for local development)
-if (process.env.NODE_ENV !== 'production') {
-  const startServer = async () => {
-    try {
-      await connectDB();
-      app.listen(PORT, () => {
-        console.log(`🚀 Server is running on port ${PORT}`);
-        console.log(`📍 Health check: http://localhost:${PORT}/health`);
-        console.log(`📍 API endpoints:`);
-        console.log(`   - Coupons: http://localhost:${PORT}/api/coupons`);
-        console.log(`   - Bookings: http://localhost:${PORT}/api/bookings`);
-      });
-    } catch (error) {
-      console.error('❌ Failed to start server:', error);
-      process.exit(1);
-    }
-  };
-  startServer();
-}
-
-// Export for Vercel
 export default app;
-

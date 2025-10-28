@@ -15,13 +15,17 @@ This project has been separated into frontend and backend:
 ```
 .
 ├── backend/              # Backend API server
+│   ├── api/              # Vercel serverless functions
+│   │   ├── index.js      # Main API handler
+│   │   ├── coupons/      # Coupons API endpoints
+│   │   └── bookings/     # Bookings API endpoints
 │   ├── src/
 │   │   ├── config/       # Database configuration
 │   │   ├── controllers/  # Request handlers
-│   │   ├── routes/       # API routes
-│   │   └── index.js      # Entry point
-│   ├── package.json
-│   └── README.md
+│   │   ├── models/       # Data models
+│   │   └── routes/       # API routes
+│   ├── vercel.json       # Vercel deployment config
+│   └── package.json
 ├── src/                  # Frontend React application
 │   ├── components/       # React components
 │   ├── lib/              # API client and utilities
@@ -69,7 +73,7 @@ cd backend
 npm install
 ```
 
-3. Create a `.env` file in the backend directory (or copy from backend/ENV_TEMPLATE.txt):
+3. Create a `.env` file in the backend directory:
 ```bash
 # Server Port
 PORT=3001
@@ -80,6 +84,9 @@ MONGODB_URI=mongodb://localhost:27017
 
 # Database Name
 DB_NAME=slot-booking
+
+# Frontend URL (for CORS)
+FRONTEND_URL=http://localhost:8080
 ```
 
 4. Start MongoDB (if running locally):
@@ -184,8 +191,8 @@ The backend seeds the following coupon codes:
 ### Backend Deployment (Vercel)
 
 1. **Prepare for Vercel:**
-   - The backend is already configured with `vercel.json` and `api/index.js`
-   - All necessary files are in place for Vercel deployment
+   - The backend is configured with `vercel.json` and serverless functions in `api/` directory
+   - Each API endpoint has its own serverless function for optimal performance
 
 2. **Deploy the backend:**
    - Create a new Vercel project for the backend
@@ -203,7 +210,12 @@ The backend seeds the following coupon codes:
      ```
 
 4. **Deploy:**
-   - Vercel will automatically deploy your API
+   - Vercel will automatically deploy your API as serverless functions
+   - Your backend will be available at `https://your-backend-project.vercel.app`
+   - API endpoints will be:
+     - `https://your-backend-project.vercel.app/api/coupons/*`
+     - `https://your-backend-project.vercel.app/api/bookings/*`
+     - `https://your-backend-project.vercel.app/health`
 
 ### Alternative Deployment Options
 
