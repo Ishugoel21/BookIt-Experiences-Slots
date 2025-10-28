@@ -9,6 +9,17 @@ console.log('🚀 Starting serverless function...');
 console.log('📍 Environment:', process.env.NODE_ENV || 'development');
 console.log('🔗 MongoDB URI set:', !!process.env.MONGODB_URI);
 
+// Global error handlers to prevent process exit
+process.on('uncaughtException', (error) => {
+  console.error('❌ Uncaught Exception:', error);
+  console.error('🔄 Continuing in demo mode...');
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+  console.error('🔄 Continuing in demo mode...');
+});
+
 // Import modules
 let connectDB, couponRoutes, bookingRoutes;
 
@@ -62,7 +73,8 @@ const initializeDB = async () => {
       dbConnected = true;
       console.log('✅ Database connected successfully');
     } catch (error) {
-      console.error('❌ Database connection failed:', error);
+      console.error('❌ Database connection failed:', error.message);
+      console.warn('🔄 Continuing in demo mode without database');
       dbConnected = false;
     }
   }

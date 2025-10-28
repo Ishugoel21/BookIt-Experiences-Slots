@@ -40,7 +40,7 @@ export const connectDB = async () => {
     console.error('      - Your cluster is running (not paused)');
     console.error('   2. If using local MongoDB, make sure MongoDB is installed and running');
     console.error('   3. Check MONGODB_ATLAS_SETUP.md for detailed setup instructions\n');
-    process.exit(1);
+    throw error; // Throw error instead of exiting process
   }
 };
 
