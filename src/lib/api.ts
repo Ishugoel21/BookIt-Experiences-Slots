@@ -1,6 +1,6 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || 
   (import.meta.env.PROD 
-    ? '/api' // Use relative path for same-domain deployment
+    ? '' // Use empty string for same-domain deployment (no /api prefix)
     : 'http://localhost:3001');
 
 export interface ValidateCouponRequest {
@@ -31,7 +31,11 @@ export interface RecordCouponUsageResponse {
 export const validateCoupon = async (
   request: ValidateCouponRequest
 ): Promise<ValidateCouponResponse> => {
-  const response = await fetch(`${API_BASE_URL}/api/coupons/validate`, {
+  const url = import.meta.env.PROD 
+    ? `${API_BASE_URL}/api/coupons/validate`
+    : `${API_BASE_URL}/api/coupons/validate`;
+  
+  const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -47,7 +51,11 @@ export const validateCoupon = async (
 export const recordCouponUsage = async (
   request: RecordCouponUsageRequest
 ): Promise<RecordCouponUsageResponse> => {
-  const response = await fetch(`${API_BASE_URL}/api/coupons/record-usage`, {
+  const url = import.meta.env.PROD 
+    ? `${API_BASE_URL}/api/coupons/record-usage`
+    : `${API_BASE_URL}/api/coupons/record-usage`;
+    
+  const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -78,9 +86,11 @@ export const getAvailability = async (
   experienceId: string,
   date: string
 ): Promise<AvailabilityResponse> => {
-  const response = await fetch(
-    `${API_BASE_URL}/api/bookings/availability?experienceId=${experienceId}&date=${date}`
-  );
+  const url = import.meta.env.PROD 
+    ? `${API_BASE_URL}/api/bookings/availability?experienceId=${experienceId}&date=${date}`
+    : `${API_BASE_URL}/api/bookings/availability?experienceId=${experienceId}&date=${date}`;
+    
+  const response = await fetch(url);
   const data = await response.json();
   return data;
 };
@@ -109,7 +119,11 @@ export interface CreateBookingResponse {
 export const createBooking = async (
   request: CreateBookingRequest
 ): Promise<CreateBookingResponse> => {
-  const response = await fetch(`${API_BASE_URL}/api/bookings`, {
+  const url = import.meta.env.PROD 
+    ? `${API_BASE_URL}/api/bookings`
+    : `${API_BASE_URL}/api/bookings`;
+    
+  const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

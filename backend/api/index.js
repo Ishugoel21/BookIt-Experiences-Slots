@@ -1,12 +1,32 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { connectDB } from '../src/config/database.js';
-import couponRoutes from '../src/routes/coupons.js';
-import bookingRoutes from '../src/routes/bookings.js';
 
-// Load environment variables
+// Load environment variables first
 dotenv.config();
+
+console.log('🚀 Starting serverless function...');
+console.log('📍 Environment:', process.env.NODE_ENV || 'development');
+console.log('🔗 MongoDB URI set:', !!process.env.MONGODB_URI);
+
+// Import modules
+let connectDB, couponRoutes, bookingRoutes;
+
+try {
+  const databaseModule = await import('../src/config/database.js');
+  connectDB = databaseModule.connectDB;
+  
+  const couponModule = await import('../src/routes/coupons.js');
+  couponRoutes = couponModule.default;
+  
+  const bookingModule = await import('../src/routes/bookings.js');
+  bookingRoutes = bookingModule.default;
+  
+  console.log('✅ Modules imported successfully');
+} catch (importError) {
+  console.error('❌ Failed to import modules:', importError);
+  throw importError;
+}
 
 const app = express();
 
@@ -16,6 +36,16 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+
+// Debug middleware - log all requests
+app.use((req, res, next) => {
+  console.log(`📥 ${req.method} ${req.path}`, {
+    query: req.query,
+    body: req.body,
+    headers: req.headers
+  });
+  next();
+});
 
 // Initialize database connection
 let dbConnected = false;
@@ -46,9 +76,9 @@ app.use(async (req, res, next) => {
   next();
 });
 
-// Routes
-app.use('/api/coupons', couponRoutes);
-app.use('/api/bookings', bookingRoutes);
+// Routes (Vercel already handles /api prefix, so we use root paths)
+app.use('/coupons', couponRoutes);
+app.use('/bookings', bookingRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
@@ -77,8 +107,8 @@ app.get('/', (req, res) => {
     version: '1.0.0',
     endpoints: {
       health: '/health',
-      coupons: '/api/coupons',
-      bookings: '/api/bookings'
+      coupons: '/coupons',
+      bookings: '/bookings'
     }
   });
 });
@@ -101,6 +131,8 @@ app.use('*', (req, res) => {
     message: `Route ${req.originalUrl} not found`
   });
 });
+
+console.log('✅ Serverless function initialized successfully');
 
 // Export for Vercel serverless functions
 export default app;
