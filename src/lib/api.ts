@@ -1,4 +1,7 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 
+  (import.meta.env.PROD 
+    ? '/api' // Use relative path for same-domain deployment
+    : 'http://localhost:3001');
 
 export interface ValidateCouponRequest {
   code: string;
