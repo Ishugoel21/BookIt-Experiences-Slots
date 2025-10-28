@@ -23,6 +23,11 @@ let dbConnected = false;
 const initializeDB = async () => {
   if (!dbConnected) {
     try {
+      if (!process.env.MONGODB_URI) {
+        console.warn('⚠️ MONGODB_URI not set, running in demo mode');
+        dbConnected = false;
+        return;
+      }
       await connectDB();
       dbConnected = true;
       console.log('✅ Database connected successfully');
@@ -35,7 +40,7 @@ const initializeDB = async () => {
 
 // Initialize database on first request
 app.use(async (req, res, next) => {
-  if (!dbConnected) {
+  if (!dbConnected && process.env.MONGODB_URI) {
     await initializeDB();
   }
   next();
