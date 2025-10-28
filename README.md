@@ -166,11 +166,52 @@ The backend seeds the following coupon codes:
 
 ## Deployment
 
-### Frontend
-Deploy to Vercel, Netlify, or any static hosting service. Set the `VITE_API_URL` environment variable to your backend API URL.
+### Frontend Deployment (Vercel)
 
-### Backend
-Deploy to Railway, Render, Heroku, or any Node.js hosting service. Make sure to set the MongoDB connection string in your environment variables.
+1. **Connect your repository to Vercel:**
+   - Go to [vercel.com](https://vercel.com) and sign in
+   - Click "New Project" and import your GitHub repository
+   - Select the root directory (not the backend folder)
+
+2. **Configure environment variables:**
+   - In Vercel dashboard, go to Settings > Environment Variables
+   - Add: `VITE_API_URL` = `https://your-backend-domain.vercel.app`
+
+3. **Deploy:**
+   - Vercel will automatically deploy on every push to main branch
+   - Your frontend will be available at `https://your-project.vercel.app`
+
+### Backend Deployment (Vercel)
+
+1. **Prepare for Vercel:**
+   - The backend is already configured with `vercel.json` and `api/index.js`
+   - All necessary files are in place for Vercel deployment
+
+2. **Deploy the backend:**
+   - Create a new Vercel project for the backend
+   - Set the root directory to the `backend` folder
+   - Or deploy from the backend directory directly
+
+3. **Configure environment variables:**
+   - In Vercel dashboard, go to Settings > Environment Variables
+   - Add the following variables:
+     ```
+     MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/slot-booking?retryWrites=true&w=majority
+     DB_NAME=slot-booking
+     NODE_ENV=production
+     FRONTEND_URL=https://your-frontend-domain.vercel.app
+     ```
+
+4. **Deploy:**
+   - Vercel will automatically deploy your API
+   - Your backend will be available at `https://your-backend-project.vercel.app`
+
+### Alternative Deployment Options
+
+**Frontend:** Netlify, GitHub Pages, or any static hosting service
+**Backend:** Railway, Render, Heroku, or any Node.js hosting service
+
+Make sure to set the appropriate environment variables for your chosen platform.
 
 ## License
 
