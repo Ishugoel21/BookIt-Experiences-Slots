@@ -9,10 +9,9 @@ export const connectDB = async () => {
   const URI = process.env.MONGODB_URI;
   
   if (!URI) {
-    console.error('❌ MONGODB_URI environment variable is not set!');
-    console.error('📝 Please create a .env file in the backend directory with your MongoDB connection string.');
-    console.error('📖 See MONGODB_ATLAS_SETUP.md for instructions.');
-    process.exit(1);
+    console.warn('⚠️ MONGODB_URI environment variable is not set!');
+    console.warn('📝 Running in demo mode without database connection.');
+    throw new Error('MONGODB_URI not configured');
   }
   
   try {
