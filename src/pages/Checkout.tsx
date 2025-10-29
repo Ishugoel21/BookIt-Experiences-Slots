@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { validateCoupon, recordCouponUsage, createBooking } from "@/lib/api";
 
@@ -23,6 +23,7 @@ const Checkout = () => {
   const [validatedCouponId, setValidatedCouponId] = useState<string | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const [appliedCouponCode, setAppliedCouponCode] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!bookingData) {
     navigate("/");
@@ -105,6 +106,7 @@ const Checkout = () => {
     }
 
     try {
+      setIsSubmitting(true);
       // Create booking in database
       const bookingResponse = await createBooking({
         experienceId: bookingData.experienceId,
@@ -139,6 +141,8 @@ const Checkout = () => {
         description: error.message || "Failed to create booking. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -273,8 +277,11 @@ const Checkout = () => {
                   onClick={handlePayment}
                   className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
                   size="lg"
+                  disabled={isSubmitting}
+                  aria-busy={isSubmitting}
                 >
-                  Pay and Confirm
+                  {isSubmitting && <Loader2 className="mr-2 animate-spin" />}
+                  {isSubmitting ? "Processing..." : "Pay and Confirm"}
                 </Button>
               </CardContent>
             </Card>
