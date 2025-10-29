@@ -267,9 +267,17 @@ export const getAvailability = async (req, res) => {
       configuredSlots = times.map(t => ({ time: t, maxCapacity: defaultCapacity }));
     }
     
-    const totalsByTime = new Map(bookings.map(b => [b.time, b.quantity]));
+    // Normalize time labels to make matching resilient (e.g., "07:00 am" vs "7:00 AM")
+    const normalizeTime = (t) => {
+      if (!t) return '';
+      const lower = String(t).trim().toLowerCase().replace(/\s+/g, ' ');
+      // remove leading zero from hour (e.g., 07:00 am -> 7:00 am)
+      return lower.replace(/^0(?=\d:)/, '');
+    };
+
+    const totalsByTime = new Map(bookings.map(b => [normalizeTime(b.time), b.quantity]));
     const availability = configuredSlots.map(slot => {
-      const booked = totalsByTime.get(slot.time) || 0;
+      const booked = totalsByTime.get(normalizeTime(slot.time)) || 0;
       
       const available = Math.max(0, slot.maxCapacity - booked);
       
