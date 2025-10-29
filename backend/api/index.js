@@ -128,7 +128,8 @@ app.use((req, res, next) => {
 app.use('/api/coupons', couponRoutes);
 // Add route-specific cache for availability before mounting router
 app.use('/api/bookings/availability', (req, res, next) => {
-  res.setHeader('Cache-Control', 'public, max-age=15, s-maxage=60, stale-while-revalidate=60');
+  // Always fetch fresh availability to reflect recent bookings immediately
+  res.setHeader('Cache-Control', 'no-store');
   next();
 });
 app.use('/api/bookings', bookingRoutes);

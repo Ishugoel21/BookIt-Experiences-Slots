@@ -41,6 +41,17 @@ const ExperienceDetail = () => {
     }
   }, [selectedDate]);
 
+  // Refetch on window focus to get freshest availability after navigating back
+  useEffect(() => {
+    const onFocus = () => {
+      if (selectedDate && experience) {
+        fetchAvailability();
+      }
+    };
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
+  }, [selectedDate, experience]);
+
   const fetchAvailability = async () => {
     if (!selectedDate || !experience) return;
     
