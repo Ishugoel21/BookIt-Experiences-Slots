@@ -1,4 +1,5 @@
 import express from 'express';
+import compression from 'compression';
 import cors from 'cors';
 import dotenv from 'dotenv';
 
@@ -46,6 +47,8 @@ app.use(cors({
   origin: process.env.FRONTEND_URL || (process.env.NODE_ENV === 'production' ? true : 'http://localhost:8080'),
   credentials: true
 }));
+app.use(compression());
+app.set('etag', 'strong');
 app.use(express.json());
 
 // Debug middleware - log all requests
@@ -55,6 +58,19 @@ app.use((req, res, next) => {
     body: req.body,
     originalUrl: req.originalUrl,
     url: req.url
+  });
+  next();
+});
+
+// Measure response times to spot slow endpoints in production
+app.use((req, res, next) => {
+  const start = process.hrtime.bigint();
+  res.on('finish', () => {
+    const end = process.hrtime.bigint();
+    const ms = Number(end - start) / 1e6;
+    if (ms > 500) {
+      console.warn(`⏱️ Slow request: ${req.method} ${req.originalUrl} - ${ms.toFixed(1)} ms`);
+    }
   });
   next();
 });
@@ -89,8 +105,22 @@ app.use(async (req, res, next) => {
   next();
 });
 
+// Light caching for GETs to improve perceived performance
+app.use((req, res, next) => {
+  if (req.method === 'GET') {
+    // Allow short-term browser and CDN caches; backend data is low-churn
+    res.setHeader('Cache-Control', 'public, max-age=30, s-maxage=120, stale-while-revalidate=120');
+  }
+  next();
+});
+
 // Routes - try both with and without /api prefix
 app.use('/api/coupons', couponRoutes);
+// Add route-specific cache for availability before mounting router
+app.use('/api/bookings/availability', (req, res, next) => {
+  res.setHeader('Cache-Control', 'public, max-age=15, s-maxage=60, stale-while-revalidate=60');
+  next();
+});
 app.use('/api/bookings', bookingRoutes);
 app.use('/coupons', couponRoutes);
 app.use('/bookings', bookingRoutes);

@@ -16,7 +16,13 @@ export const connectDB = async () => {
   
   try {
     console.log('⏳ Connecting to MongoDB...');
-    client = new MongoClient(URI);
+    client = new MongoClient(URI, {
+      maxPoolSize: parseInt(process.env.DB_MAX_POOL_SIZE || '20', 10),
+      minPoolSize: parseInt(process.env.DB_MIN_POOL_SIZE || '5', 10),
+      serverSelectionTimeoutMS: parseInt(process.env.DB_SERVER_SELECTION_TIMEOUT_MS || '3000', 10),
+      socketTimeoutMS: parseInt(process.env.DB_SOCKET_TIMEOUT_MS || '10000', 10),
+      retryWrites: true
+    });
     await client.connect();
     db = client.db(DB_NAME);
     console.log('✅ Connected to MongoDB successfully!');
@@ -59,6 +65,15 @@ const createIndexes = async () => {
   const usageCollection = db.collection('coupon_usage');
   await usageCollection.createIndex({ coupon_id: 1, email: 1 });
   await usageCollection.createIndex({ coupon_id: 1 });
+
+  // Bookings indexes to speed up common queries
+  const bookingsCollection = db.collection('bookings');
+  // Support getByExperienceAndDate and availability lookups
+  await bookingsCollection.createIndex({ experienceId: 1, date: 1, status: 1 });
+  await bookingsCollection.createIndex({ experienceId: 1, date: 1, time: 1, status: 1 });
+  // Support admin listing by time and user email lookups
+  await bookingsCollection.createIndex({ createdAt: -1 });
+  await bookingsCollection.createIndex({ customerEmail: 1, createdAt: -1 });
 };
 
 const seedCoupons = async () => {
