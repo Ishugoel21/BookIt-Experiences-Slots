@@ -19,8 +19,9 @@ export const connectDB = async () => {
     client = new MongoClient(URI, {
       maxPoolSize: parseInt(process.env.DB_MAX_POOL_SIZE || '20', 10),
       minPoolSize: parseInt(process.env.DB_MIN_POOL_SIZE || '5', 10),
-      serverSelectionTimeoutMS: parseInt(process.env.DB_SERVER_SELECTION_TIMEOUT_MS || '3000', 10),
-      socketTimeoutMS: parseInt(process.env.DB_SOCKET_TIMEOUT_MS || '10000', 10),
+      // Fail fast in serverless to avoid long waits
+      serverSelectionTimeoutMS: parseInt(process.env.DB_SERVER_SELECTION_TIMEOUT_MS || '1500', 10),
+      socketTimeoutMS: parseInt(process.env.DB_SOCKET_TIMEOUT_MS || '5000', 10),
       retryWrites: true
     });
     await client.connect();

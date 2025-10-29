@@ -119,12 +119,28 @@ export const getAvailability = async (
     return cached.data;
   }
 
-  const response = await fetchWithTimeout(url, { cache: 'no-store' });
-  const data = await response.json();
-  if (data && data.success) {
-    availabilityCache.set(cacheKey, { ts: now, data });
+  // retry-on-timeout logic for cold starts or transient network
+  const maxAttempts = 2;
+  let lastError: any = null;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const response = await fetchWithTimeout(url, { cache: 'no-store', timeoutMs: attempt === 1 ? 15000 : 22000 });
+      const data = await response.json();
+      if (data && data.success) {
+        availabilityCache.set(cacheKey, { ts: now, data });
+      }
+      return data;
+    } catch (err: any) {
+      lastError = err;
+      // If aborted or network error, retry once
+      const isAbort = err?.name === 'AbortError';
+      if (!isAbort || attempt === maxAttempts) {
+        throw new Error(isAbort ? 'Request timed out, please try again.' : (err?.message || 'Network error'));
+      }
+      await new Promise((r) => setTimeout(r, 300));
+    }
   }
-  return data;
+  throw lastError || new Error('Failed to fetch availability');
 };
 
 export interface CreateBookingRequest {

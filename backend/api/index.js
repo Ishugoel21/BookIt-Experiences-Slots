@@ -77,12 +77,21 @@ app.use((req, res, next) => {
 
 // Initialize database connection
 let dbConnected = false;
+let lastDbConnectFailedAt = 0;
+const DB_RETRY_COOLDOWN_MS = parseInt(process.env.DB_RETRY_COOLDOWN_MS || '120000', 10);
 
 const initializeDB = async () => {
   if (!dbConnected) {
     try {
       if (!process.env.MONGODB_URI) {
         console.warn('⚠️ MONGODB_URI not set, running in demo mode');
+        dbConnected = false;
+        return;
+      }
+      // Respect cooldown after a failed attempt
+      const now = Date.now();
+      if (lastDbConnectFailedAt && (now - lastDbConnectFailedAt) < DB_RETRY_COOLDOWN_MS) {
+        console.warn(`⏭️ Skipping DB reconnect attempt (cooldown active, ${(DB_RETRY_COOLDOWN_MS - (now - lastDbConnectFailedAt))}ms left)`);
         dbConnected = false;
         return;
       }
@@ -93,6 +102,7 @@ const initializeDB = async () => {
       console.error('❌ Database connection failed:', error.message);
       console.warn('🔄 Continuing in demo mode without database');
       dbConnected = false;
+      lastDbConnectFailedAt = Date.now();
     }
   }
 };
