@@ -235,18 +235,40 @@ export const getAvailability = async (req, res) => {
       bookings = [];
     }
     
-    // Calculate availability for each time slot
-    const timeSlots = [
-      { time: "07:00 am", maxCapacity: 10 },
-      { time: "09:00 am", maxCapacity: 10 },
-      { time: "11:00 am", maxCapacity: 10 },
-      { time: "01:00 pm", maxCapacity: 10 },
-      { time: "03:00 pm", maxCapacity: 10 },
-      { time: "05:00 pm", maxCapacity: 10 }
-    ];
+    // Determine dynamic time slots and capacity
+    let configuredSlots;
+    let defaultCapacity = parseInt(process.env.SLOT_CAPACITY || '10', 10);
+    const envTimes = (process.env.SLOT_TIMES || '')
+      .split(',')
+      .map(t => t.trim())
+      .filter(Boolean);
+
+    // Try to load per-experience config from DB if available
+    try {
+      const db = getDB();
+      const experienceCfg = await db.collection('experiences').findOne({ experienceId });
+      if (experienceCfg && Array.isArray(experienceCfg.timeSlots) && experienceCfg.timeSlots.length > 0) {
+        configuredSlots = experienceCfg.timeSlots.map(t => ({ time: t, maxCapacity: experienceCfg.maxCapacity || defaultCapacity }));
+      }
+      if (experienceCfg && typeof experienceCfg.maxCapacity === 'number') {
+        defaultCapacity = experienceCfg.maxCapacity;
+      }
+    } catch {}
+
+    if (!configuredSlots) {
+      const times = envTimes.length > 0 ? envTimes : [
+        '07:00 am',
+        '09:00 am',
+        '11:00 am',
+        '01:00 pm',
+        '03:00 pm',
+        '05:00 pm'
+      ];
+      configuredSlots = times.map(t => ({ time: t, maxCapacity: defaultCapacity }));
+    }
     
     const totalsByTime = new Map(bookings.map(b => [b.time, b.quantity]));
-    const availability = timeSlots.map(slot => {
+    const availability = configuredSlots.map(slot => {
       const booked = totalsByTime.get(slot.time) || 0;
       
       const available = Math.max(0, slot.maxCapacity - booked);
