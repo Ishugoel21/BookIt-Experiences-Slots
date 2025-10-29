@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { validateCoupon, recordCouponUsage, createBooking } from "@/lib/api";
+import { validateCoupon, recordCouponUsage, createBooking, invalidateAvailabilityCache } from "@/lib/api";
 
 const Checkout = () => {
   const location = useLocation();
@@ -124,6 +124,8 @@ const Checkout = () => {
       });
 
       const bookingId = bookingResponse.booking.bookingId;
+      // Invalidate availability cache so UI reflects the new booking immediately
+      invalidateAvailabilityCache(bookingData.experienceId, bookingData.date);
 
       navigate("/confirmation", {
         state: {

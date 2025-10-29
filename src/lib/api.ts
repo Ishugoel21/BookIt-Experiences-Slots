@@ -102,7 +102,18 @@ export interface AvailabilityResponse {
 
 // Simple in-memory cache for availability to speed up UX
 const availabilityCache = new Map<string, { ts: number; data: AvailabilityResponse }>();
-const AVAIL_TTL_MS = 30_000; // 30s
+const AVAIL_TTL_MS = 5_000; // keep short to avoid stale UI
+
+export const invalidateAvailabilityCache = (experienceId?: string, date?: string) => {
+  if (!experienceId && !date) {
+    availabilityCache.clear();
+    return;
+  }
+  const prefix = `${experienceId || ''}|${date || ''}`;
+  for (const key of Array.from(availabilityCache.keys())) {
+    if (key.startsWith(prefix)) availabilityCache.delete(key);
+  }
+};
 
 export const getAvailability = async (
   experienceId: string,
